@@ -7,19 +7,31 @@ import type { CompareResult } from './types'
 
 const STORAGE_KEY = 'shopcheap'
 
-function loadSaved(): { postalCode: string; items: string[] } {
+function loadSaved(): {
+  postalCode: string
+  items: string[]
+  todaysEarnings: string
+} {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const data = JSON.parse(raw)
+      return {
+        postalCode: data.postalCode ?? '',
+        items: data.items ?? [],
+        todaysEarnings: data.todaysEarnings ?? '',
+      }
+    }
   } catch {
     /* ignore */
   }
-  return { postalCode: '', items: [] }
+  return { postalCode: '', items: [], todaysEarnings: '' }
 }
 
 function App() {
   const saved = loadSaved()
   const [postalCode, setPostalCode] = useState(saved.postalCode)
+  const [todaysEarnings, setTodaysEarnings] = useState(saved.todaysEarnings)
   const [items, setItems] = useState<string[]>(saved.items)
   const [result, setResult] = useState<CompareResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -27,8 +39,11 @@ function App() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ postalCode, items }))
-  }, [postalCode, items])
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ postalCode, items, todaysEarnings }),
+    )
+  }, [postalCode, items, todaysEarnings])
 
   const addItem = useCallback((item: string) => {
     setItems((prev) => [...prev, item])
@@ -73,13 +88,16 @@ function App() {
   }, [postalCode, items])
 
   const canCompare = postalCode.trim().length >= 5 && items.length > 0
+  const earningsValue = Number.parseFloat(todaysEarnings)
+  const earnings =
+    Number.isFinite(earningsValue) && earningsValue > 0 ? earningsValue : null
 
   return (
     <div className="app">
       <header className="header">
         <div>
           <h1>shopCheap</h1>
-          <p>Compare flyer deals by unit price</p>
+          <p>Stretch today&apos;s pay across the groceries you need</p>
         </div>
       </header>
 
@@ -88,6 +106,8 @@ function App() {
           <ShoppingListForm
             postalCode={postalCode}
             onPostalCodeChange={setPostalCode}
+            todaysEarnings={todaysEarnings}
+            onTodaysEarningsChange={setTodaysEarnings}
             items={items}
             onAddItem={addItem}
             onAddItems={addItems}
@@ -114,14 +134,20 @@ function App() {
           {error && <div className="error">{error}</div>}
 
           {result ? (
-            <ResultsView result={result} locale={detectLocale(postalCode)} />
+            <ResultsView
+              result={result}
+              locale={detectLocale(postalCode)}
+              todaysEarnings={earnings}
+            />
           ) : (
             !loading && (
               <div className="empty-state">
-                <h2>No results yet</h2>
+                <h2>Make today&apos;s earnings go further</h2>
                 <p>
-                  Add your postal code and shopping list on the left, then find
-                  deals. Results and your running total will show here.
+                  Daily pay means every grocery dollar matters. Enter what you
+                  earned today, add what you need, and we&apos;ll find nearby flyer
+                  deals by unit value — so you leave cash for the rest of the
+                  day.
                 </p>
               </div>
             )

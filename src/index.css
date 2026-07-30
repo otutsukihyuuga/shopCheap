@@ -373,6 +373,38 @@ body,
   font-size: 0.8125rem;
 }
 
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.budget-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.15rem;
+}
+
+.remaining-amount {
+  font-size: 1.5rem;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.remaining-amount.warn {
+  color: var(--error);
+}
+
+.total-bar.over-budget {
+  border-color: var(--error);
+}
+
+.budget-prompt {
+  max-width: 16rem;
+}
+
 .total-stores {
   display: flex;
   flex-wrap: wrap;
@@ -380,6 +412,7 @@ body,
   justify-content: flex-end;
   align-content: flex-start;
   max-width: 22rem;
+  margin-top: 0.5rem;
   font-size: 0.75rem;
   color: var(--text);
 }

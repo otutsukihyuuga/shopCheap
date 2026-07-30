@@ -4,6 +4,8 @@ import { parseListItems } from '../lib/parseList'
 interface Props {
   postalCode: string
   onPostalCodeChange: (value: string) => void
+  todaysEarnings: string
+  onTodaysEarningsChange: (value: string) => void
   items: string[]
   onAddItem: (item: string) => void
   onAddItems: (items: string[]) => void
@@ -16,6 +18,8 @@ interface Props {
 export function ShoppingListForm({
   postalCode,
   onPostalCodeChange,
+  todaysEarnings,
+  onTodaysEarningsChange,
   items,
   onAddItem,
   onAddItems,
@@ -48,6 +52,25 @@ export function ShoppingListForm({
   return (
     <section className="panel">
       <div className="field">
+        <label htmlFor="earnings">Today&apos;s earnings</label>
+        <input
+          id="earnings"
+          type="number"
+          min="0"
+          step="0.01"
+          inputMode="decimal"
+          placeholder="What you made today"
+          value={todaysEarnings}
+          onChange={(e) => onTodaysEarningsChange(e.target.value)}
+          disabled={loading}
+        />
+        <span className="field-hint">
+          Set how much cash you have for food today — we&apos;ll show what&apos;s left
+          after your list.
+        </span>
+      </div>
+
+      <div className="field">
         <label htmlFor="postal">Postal / ZIP code</label>
         <input
           id="postal"
@@ -61,11 +84,11 @@ export function ShoppingListForm({
 
       <form className="add-form" onSubmit={handleSubmit}>
         <div className="field grow">
-          <label htmlFor="item">Add item</label>
+          <label htmlFor="item">Need today</label>
           <input
             id="item"
             type="text"
-            placeholder="e.g. milk"
+            placeholder="e.g. milk, rice, eggs"
             disabled={loading}
             autoComplete="off"
           />
@@ -77,7 +100,7 @@ export function ShoppingListForm({
 
       <div className="bulk-section">
         <div className="field">
-          <label htmlFor="bulk">Bulk paste</label>
+          <label htmlFor="bulk">Paste today&apos;s list</label>
           <textarea
             id="bulk"
             rows={3}
@@ -122,7 +145,7 @@ export function ShoppingListForm({
         onClick={onCompare}
         disabled={!canCompare || loading}
       >
-        {loading ? 'Searching flyers…' : 'Find cheapest deals'}
+        {loading ? 'Searching flyers…' : "Stretch today's cash"}
       </button>
     </section>
   )

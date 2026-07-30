@@ -4,6 +4,7 @@ import type { CompareResult, DealOption } from '../types'
 interface Props {
   result: CompareResult
   locale: string
+  todaysEarnings: number | null
 }
 
 function formatPrice(price: number, locale: string): string {
@@ -30,7 +31,7 @@ function defaultSelections(result: CompareResult): Record<string, string> {
   return next
 }
 
-export function ResultsView({ result, locale }: Props) {
+export function ResultsView({ result, locale, todaysEarnings }: Props) {
   const [selections, setSelections] = useState(() => defaultSelections(result))
   const [openQuery, setOpenQuery] = useState<string | null>(
     () => result.items.find((i) => i.found)?.query ?? null,
@@ -76,11 +77,15 @@ export function ResultsView({ result, locale }: Props) {
     setOpenQuery((prev) => (prev === query ? null : query))
   }
 
+  const remaining =
+    todaysEarnings != null ? todaysEarnings - total : null
+  const overBudget = remaining != null && remaining < 0
+
   return (
     <section className="results">
-      <div className="total-bar">
+      <div className={`total-bar ${overBudget ? 'over-budget' : ''}`}>
         <div>
-          <span className="total-label">Your total</span>
+          <span className="total-label">Grocery spend</span>
           <strong className="total-amount">{formatPrice(total, locale)}</strong>
           <p className="total-meta">
             {selectedCount} of {result.items.length} items selected
@@ -88,20 +93,45 @@ export function ResultsView({ result, locale }: Props) {
               ` · ${result.items.length - foundCount} not found`}
           </p>
         </div>
-        {storeBreakdown.length > 0 && (
-          <div className="total-stores">
-            {storeBreakdown.map(([merchant, count]) => (
-              <span key={merchant}>
-                {merchant} ({count})
+
+        <div className="budget-side">
+          {todaysEarnings != null ? (
+            <>
+              <span className="total-label">
+                {overBudget ? 'Over budget' : 'Left for the day'}
               </span>
-            ))}
-          </div>
-        )}
+              <strong className={`remaining-amount ${overBudget ? 'warn' : ''}`}>
+                {formatPrice(Math.abs(remaining!), locale)}
+                {overBudget ? ' over' : ''}
+              </strong>
+              <p className="total-meta">
+                From {formatPrice(todaysEarnings, locale)} earned today
+              </p>
+            </>
+          ) : (
+            <p className="total-meta budget-prompt">
+              Add today&apos;s earnings on the left to see what&apos;s left after
+              food.
+            </p>
+          )}
+          {storeBreakdown.length > 0 && (
+            <div className="total-stores">
+              {storeBreakdown.map(([merchant, count]) => (
+                <span key={merchant}>
+                  {merchant} ({count})
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="results-header">
-        <h2>Pick options</h2>
-        <p>Open each item and choose a deal — total updates as you go</p>
+        <h2>Choose deals that fit today</h2>
+        <p>
+          Open each item and switch options — spend and leftover cash update
+          live
+        </p>
       </div>
 
       <div className="accordion-list">
